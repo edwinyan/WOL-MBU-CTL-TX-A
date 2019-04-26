@@ -13,12 +13,12 @@ OS_MUTEX	RX_MUTEX;		//uart rx mutex
 OS_MUTEX	FIFO_MUTEX;
 
 extern key_state_t key_state[NUMBER_OF_KEY];
-
+extern const u16 led_index[16];
 //static FIFO_T stFiFo;
 
 const u16 led_test[16]={0x0001,0x0002,0x0004,0x0008,0x0010,0x0020,0x0040,0x0080,0x0100,0x0200,0x0400,0x0800,0x1000,0x2000,0x4000,0x8000};
 
-static u16 led_value=0;	//led display value for each two 74hc595 input
+static u16 led_value[3]={0};	//led display value for each two 74hc595 input
 
 /*----------------------------------------------------------------------------*/
 //macro and variables
@@ -89,14 +89,31 @@ STATIC void app_key_scan_task(void *p_arg)
 STATIC void app_led_display_task(void *p_arg)
 {
 	OS_ERR      err;
+	u8 chip_index;
+	u8 key_index;
+	//u16 led_value[3]={0};
 
 	(void)p_arg;
 	
 
 	while (DEF_TRUE) 
     {   
-    	
-		OSTimeDlyHMSM(0, 0, 0, 20, OS_OPT_TIME_HMSM_STRICT, &err);
+    	//get led display values
+    	for(chip_index=0;chip_index<3;chip_index++)
+    	{
+    		for(key_index=0;key_index<16;key_index++)
+    		{
+				if(key_state[chip_index*DATA_WIDTH_165+key_index].key_status == KEY_RELEASED)
+				{
+					led_value[chip_index] |= led_index[key_index];
+				}
+    		}
+		}
+		for(chip_index=0;chip_index<3;chip_index++)
+		{
+			write_shift_regs(led_value[chip_index],chip_index);
+		}
+		OSTimeDlyHMSM(0, 0, 0, 5, OS_OPT_TIME_HMSM_STRICT, &err);
     }
 }
 
