@@ -19,6 +19,17 @@
 #define KEY15				0X4000
 #define KEY16				0X8000
 
+#define KEY_RELEASE			0x00
+#define KEY_PRESSED			0x01
+#define KEY_HOLDING			0x02
+#define KEY_RELEASED		0x04
+
+#define NUMBER_OF_SHIFT_CHIPS	2
+#define NUMBER_OF_CHIPS			3
+#define DATA_WIDTH_165			NUMBER_OF_SHIFT_CHIPS*8
+#define NUMBER_OF_KEY			48
+
+
 typedef struct{
 	u8 chip_index;	//0 -- 2 chip index
 	u8 key_index;	//0 -- 15 key index 	
@@ -26,12 +37,8 @@ typedef struct{
 }key_state_t;
 
 
-void read_shift_init(void);
 
-#if 0
-u8 read_shift_regs(u8 *index);
-#else
-u8 read_shift_regs(u16 *value1,u16 *value2,u16 *value3);
-#endif
+void read_shift_init(void);
+u8 read_shift_regs(u8 *index,u8 *state);
 
 #endif

@@ -11,6 +11,8 @@ OS_MUTEX	RX_MUTEX;		//uart rx mutex
 
 OS_MUTEX	FIFO_MUTEX;
 
+extern key_state_t key_state[NUMBER_OF_KEY];
+
 //static FIFO_T stFiFo;
 
 /*----------------------------------------------------------------------------*/
@@ -33,8 +35,8 @@ static  CPU_STK  app_tx_task_stk[APP_TX_TASK_STK_SIZE];
 STATIC void app_rfm_tx_task(void *p_arg)
 {
 	OS_ERR      err;
-	//u8 index;
-	u16 value1,value2,value3;
+	u8 index=0;
+	u8 state=0;
 
 	(void)p_arg;
 	
@@ -43,13 +45,12 @@ STATIC void app_rfm_tx_task(void *p_arg)
 	while (DEF_TRUE) 
     {   
 		
-    	if(read_shift_regs(&value1,&value2,&value3))
-//    if(read_shift_regs(&index))
+    if(read_shift_regs(&index,&state))
 		{
-			MSG("0x%x,0x%x,0x%x\n",value1,value2,value3);
-//			MSG("key%d has pressed\n",index);
+			MSG("key%d =%d\n",index,state);
 		}
-		OSTimeDlyHMSM(0, 0, 0, 100, OS_OPT_TIME_HMSM_STRICT, &err);
+
+		OSTimeDlyHMSM(0, 0, 0, 10, OS_OPT_TIME_HMSM_STRICT, &err);
     }
 }
 
