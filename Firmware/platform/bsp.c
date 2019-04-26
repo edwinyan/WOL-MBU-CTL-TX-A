@@ -24,6 +24,7 @@
 #include "pwm_drv.h"
 #include "gpio_drv.h"
 #include "key_74hc165d_drv.h"
+#include "led_74hc595d_drv.h"
 
 /*----------------------------------------------------------------------------*/
 //macros
@@ -132,7 +133,9 @@ void BSP_Peripheral_Init(void)
 	gpio_drv_init(); //config gpio for output
 //	TIM3_PWM_Init(4095,7);  //TIM3 for adc2,3,4,5
 //	TIM5_PWM_Init(4095,7); //pwm frequency=1M/409 = 2.439KHz
-	read_shift_init();	
+	read_shift_init();
+	write_shift_init();
+
 }
 
 /*
