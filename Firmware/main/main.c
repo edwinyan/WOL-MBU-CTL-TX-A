@@ -4,6 +4,7 @@
 #include "led_drv.h"
 #include "tc_common.h"
 #include "uart_drv.h"
+#include "key_74hc165d_drv.h"
 
 OS_MUTEX	TX_MUTEX;		//uart tx mutex
 OS_MUTEX	RX_MUTEX;		//uart rx mutex
@@ -32,6 +33,8 @@ static  CPU_STK  app_tx_task_stk[APP_TX_TASK_STK_SIZE];
 STATIC void app_rfm_tx_task(void *p_arg)
 {
 	OS_ERR      err;
+	//u8 index;
+	u16 value1,value2,value3;
 
 	(void)p_arg;
 	
@@ -39,7 +42,14 @@ STATIC void app_rfm_tx_task(void *p_arg)
 
 	while (DEF_TRUE) 
     {   
-		OSTimeDlyHMSM(0, 0, 1, 0, OS_OPT_TIME_HMSM_STRICT, &err);
+		
+    	if(read_shift_regs(&value1,&value2,&value3))
+//    if(read_shift_regs(&index))
+		{
+			MSG("0x%x,0x%x,0x%x\n",value1,value2,value3);
+//			MSG("key%d has pressed\n",index);
+		}
+		OSTimeDlyHMSM(0, 0, 0, 100, OS_OPT_TIME_HMSM_STRICT, &err);
     }
 }
 
@@ -106,10 +116,10 @@ STATIC void app_task_start(void *p_arg)
     while (DEF_TRUE) 
     {   
         //tc_run_all();
-        MSG("----------------loop-----------------\r\n");
+       // MSG("------=------loop-------=------\r\n");
        // LED_G_ON;
 		OSTimeDlyHMSM(0, 0, 0, 500, OS_OPT_TIME_HMSM_STRICT, &err);
-		//LED_G_OFF;
+		//LED_G_OFF;g
 		OSTimeDlyHMSM(0, 0, 0, 500, OS_OPT_TIME_HMSM_STRICT, &err);
     }
 }
