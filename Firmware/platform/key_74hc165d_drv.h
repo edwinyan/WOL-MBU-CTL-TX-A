@@ -29,16 +29,90 @@
 #define DATA_WIDTH_165			NUMBER_OF_SHIFT_CHIPS*8
 #define NUMBER_OF_KEY			48
 
+typedef enum{
+	//display video to center screen
+	KEY_SRC_DISPLAY_AIRCRAFT1 = 0,
+	KEY_SRC_DISPLAY_AIRCRAFT2,
+	KEY_SRC_DISPLAY_AIRCRAFT3,
+	KEY_SRC_DISPLAY_AIRCRAFT4,
+	KEY_SRC_DISPLAY_RECORDER1,
+	KEY_SRC_DISPLAY_RECORDER2,
+	KEY_SRC_DISPLAY_CONTROLBALL1,
+	KEY_SRC_DISPLAY_CONTROLBALL2,
+	//video streaming to control center
+	KEY_SRC_STREAMING_AIRCRAFT1,
+	KEY_SRC_STREAMING_AIRCRAFT2,
+	KEY_SRC_STREAMING_AIRCRAFT3,
+	KEY_SRC_STREAMING_AIRCRAFT4,
+	KEY_SRC_STREAMING_RECORDER1,
+	KEY_SRC_STREAMING_RECORDER2,
+	KEY_SRC_STREAMING_CONTROLBALL1,
+	KEY_SRC_STREAMING_CONTROLBALL2,
+	//control option select
+	KEY_SRC_CTLOPT_AIRCRAFT1,
+	KEY_SRC_CTLOPT_AIRCRAFT2,
+	KEY_SRC_CTLOPT_AIRCRAFT3,
+	KEY_SRC_CTLOPT_AIRCRAFT4,
+	KEY_SRC_CTLOPT_RECORDER1,
+	KEY_SRC_CTLOPT_RECORDER2,
+	KEY_SRC_CTLOPT_CONTROLBALL1,
+	KEY_SRC_CTLOPT_CONTROLBALL2,
+	//control motion select
+	KEY_SRC_CTLMOTION_AIRCRAFT,
+	KEY_SRC_CTLMOTION_PTZ,
+	KEY_SRC_CTLMOTION_PTZRESET,
+	KEY_SRC_CTLMOTION_ZOOMIN,
+	KEY_SRC_CTLMOTION_ZOOMOUT,
+	KEY_SRC_CTLMOTION_ZOOMRESET,
+	KEY_SRC_CTLMOTION_CRASHSTOP,
+	KEY_SRC_CTLMOTION_RETURNHOME,
+	//voice and light control
+	KEY_SRC_ALARM_LAMP,
+	KEY_SRC_ALARM_WHISTLE1,
+	KEY_SRC_ALARM_WHISTLE2,
+	KEY_SRC_SHOUTING,
+	KEY_SRC_BACKUP1,
+	KEY_SRC_BACKUP2,
+	KEY_SRC_BACKUP3,
+	KEY_SRC_BACKUP4,
+	//backup
+	KEY_SRC_BACKUP5,
+	KEY_SRC_BACKUP6,
+	KEY_SRC_BACKUP7,
+	KEY_SRC_BACKUP8,
+	KEY_SRC_BACKUP9,
+	KEY_SRC_BACKUP10,
+	KEY_SRC_BACKUP11,
+	KEY_SRC_BACKUP12,
+	
+	KEY_SRC_NUM
+}key_src_enum;
 
 typedef struct{
 	u8 chip_index;	//0 -- 2 chip index
 	u8 key_index;	//0 -- 15 key index 	
 	u8 key_status;	//0:released 1:hold 2:pressed
+	u16 key_set;		//count of key has been pressed
 }key_state_t;
 
+typedef struct{
+	u8 aircraft_selected;
+	u8 alarm_lamp;
+	u8 alarm_whistle1;
+	u8 alarm_whistle2;
+	u8 shouting;
+}aircraft_state_t;
+
+typedef struct{
+	u8 ptz_reset;
+	u8 zoom_in;
+	u8 zoom_out;
+	u8 zoom_reset;
+}controlball_state_t;
 
 
 void read_shift_init(void);
-u8 read_shift_regs(u8 *index,u8 *state);
+u8 read_shift_regs(u8 *index);
+void key_state_remap_handle(u8 index);
 
 #endif

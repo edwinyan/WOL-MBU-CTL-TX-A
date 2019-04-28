@@ -18,7 +18,7 @@ extern const u16 led_index[16];
 
 const u16 led_test[16]={0x0001,0x0002,0x0004,0x0008,0x0010,0x0020,0x0040,0x0080,0x0100,0x0200,0x0400,0x0800,0x1000,0x2000,0x4000,0x8000};
 
-static u16 led_value[3]={0};	//led display value for each two 74hc595 input
+//static u16 led_value[3]={0};	//led display value for each two 74hc595 input
 
 /*----------------------------------------------------------------------------*/
 //macro and variables
@@ -70,18 +70,25 @@ STATIC void app_key_scan_task(void *p_arg)
 {
 	OS_ERR      err;
 	u8 index=0;
-	u8 state=0;
+//	u8 Index=0;
 
 	(void)p_arg;
 	
 
 	while (DEF_TRUE) 
-    {   
-    	if(read_shift_regs(&index,&state))
-		{
-			MSG("key%d =%d\n",index,state);
-		}
-		
+    { 
+    	if(read_shift_regs(&index) == 4){
+//			for(index=0;index<48;index++)
+//			{
+//		    	if(key_state[Index].key_status == KEY_RELEASED)
+//				{
+//					MSG("key%d released\n",Index);
+//				}
+//			}
+				key_state_remap_handle(index);
+    	}
+
+		//key_state_remap_handle(Index);
 		OSTimeDlyHMSM(0, 0, 0, 10, OS_OPT_TIME_HMSM_STRICT, &err);
     }
 }
@@ -91,13 +98,16 @@ STATIC void app_led_display_task(void *p_arg)
 	OS_ERR      err;
 	u8 chip_index;
 	u8 key_index;
-	//u16 led_value[3]={0};
+	u16 led_value[3]={0};
 
 	(void)p_arg;
 	
 
 	while (DEF_TRUE) 
     {   
+    	led_value[0]=0;
+		led_value[1]=0;
+		led_value[2]=0;
     	//get led display values
     	for(chip_index=0;chip_index<3;chip_index++)
     	{
