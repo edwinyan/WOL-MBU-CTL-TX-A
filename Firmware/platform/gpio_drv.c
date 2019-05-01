@@ -31,6 +31,8 @@ STATIC gpio_config_t gpio_config_out_array[GPIO_SRC_NUM_OUT] = {
 	{IN_595_3_GPIO, IN_595_3}, 	
 	{IN_595_4_GPIO, IN_595_4},
 
+    {GPIOD,GPIO_Pin_2},
+
 };
 
 STATIC gpio_config_t gpio_config_in_array[GPIO_SRC_NUM_IN] = {
@@ -68,43 +70,7 @@ void gpio_drv_init(void)
     }
 
 }
-#if 0
-//config rx led status output
-void tx_gpio_init(void)
-{
-	GPIO_InitTypeDef  gpio_init;
-	u8 counter;
 
-	gpio_init.GPIO_Mode  = GPIO_Mode_OUT;
-    gpio_init.GPIO_OType = GPIO_OType_PP;
-    gpio_init.GPIO_PuPd  = GPIO_PuPd_UP;
-    gpio_init.GPIO_Speed = GPIO_Speed_50MHz;
-
-	 for(counter = 0; counter < 3; counter++)
-    {
-        gpio_init.GPIO_Pin = gpio_led_array[counter].pin;
-        GPIO_Init(gpio_led_array[counter].port, &gpio_init);
-    }
-}
-
-//config tx led status input
-void rx_gpio_init(void)
-{
-	GPIO_InitTypeDef  gpio_init;
-	u8 counter;
-
-	gpio_init.GPIO_Mode  = GPIO_Mode_IN;
-    gpio_init.GPIO_OType = GPIO_OType_PP;
-    gpio_init.GPIO_PuPd  = GPIO_PuPd_DOWN;
-    gpio_init.GPIO_Speed = GPIO_Speed_50MHz;
-
-	 for(counter = 0; counter < 3; counter++)
-    {
-        gpio_init.GPIO_Pin = gpio_led_array[counter].pin;
-        GPIO_Init(gpio_led_array[counter].port, &gpio_init);
-    }
-}
-#endif
 
 void gpio_value_set(u8 src)
 {

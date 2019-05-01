@@ -34,7 +34,12 @@ uart_drv_t uart_drv_array[UART_SRC_NUM] = {
         {SERIAL_BAUDRATE_115200, SERIAL_DATABITS_8, SERIAL_STOPBITS_1, SERIAL_PARITY_NONE, SERIAL_FLOW_CTRL_NONE}, 
         0,{GPIOA, GPIOA},{GPIO_Pin_9,GPIO_Pin_10}, {GPIO_PinSource9, GPIO_PinSource10},GPIO_AF_USART1,DEF_FALSE
     },
-
+	//uart4 for communication
+    { 
+        "USART4", &SerialDevCfg_STM32_USART4, 
+        {SERIAL_BAUDRATE_115200, SERIAL_DATABITS_8, SERIAL_STOPBITS_1, SERIAL_PARITY_NONE, SERIAL_FLOW_CTRL_NONE}, 
+        0,{GPIOC, GPIOC},{GPIO_Pin_10,GPIO_Pin_11}, {GPIO_PinSource10, GPIO_PinSource11},GPIO_AF_UART4,DEF_FALSE
+    },
     //endmark
     { 
         "", NULL, 
@@ -143,6 +148,42 @@ u32 uart_drv_dbg_recv(u8 *buf, u32 len)
     u32 read_len;
     SERIAL_ERR  err;
     uart_drv_t *uart_drv = &uart_drv_array[UART_SRC_DBG];
+    ASSERT_R(DEF_TRUE == uart_drv->uart_enabled);
+    
+    read_len = Serial_Rd((SERIAL_IF_NBR   )uart_drv->uart_if_nbr,
+              (void           *)buf,
+              (CPU_SIZE_T      )len,
+              (CPU_INT32U      )0,
+              (SERIAL_ERR     *)&err);
+   
+    if(err != SERIAL_ERR_NONE)
+    {
+        MSG_INFO("%s err: status: 0x%x, len: 0x%x\r\n", __FUNCTION__,err,len);
+        //ASSERT_R(err == SERIAL_ERR_NONE);
+    }
+    
+    return read_len;
+}
+
+void uart_drv_comm_send(u8 *buf, u32 len)
+{
+    SERIAL_ERR  err;
+    uart_drv_t *uart_drv = &uart_drv_array[UART_SRC_COMM];
+    ASSERT_R(DEF_TRUE == uart_drv->uart_enabled);
+    
+    Serial_Wr((SERIAL_IF_NBR   )uart_drv->uart_if_nbr,
+              (void           *)buf,
+              (CPU_SIZE_T      )len,
+              (CPU_INT32U      )0,
+              (SERIAL_ERR     *)&err);
+    ASSERT_R(err == SERIAL_ERR_NONE);
+}
+
+u32 uart_drv_comm_recv(u8 *buf, u32 len)
+{
+    u32 read_len;
+    SERIAL_ERR  err;
+    uart_drv_t *uart_drv = &uart_drv_array[UART_SRC_COMM];
     ASSERT_R(DEF_TRUE == uart_drv->uart_enabled);
     
     read_len = Serial_Rd((SERIAL_IF_NBR   )uart_drv->uart_if_nbr,

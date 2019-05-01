@@ -32,7 +32,7 @@ void DMA2_Stream0_IRQHandler()
 {
 	OSIntEnter();
 	if(DMA_GetITStatus(DMA2_Stream0,DMA_IT_TCIF0) != RESET){
-		//test_flag++;
+		test_flag++;
 		adc_filter();
 		DMA_ClearITPendingBit(DMA2_Stream0,DMA_IT_TCIF0);
 	}
@@ -85,15 +85,15 @@ void  Adc_Init(void)
 	
 	//RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
 
-	GPIO_InitStructure.GPIO_Pin = ADC1_IN0_PIN | ADC1_IN6_PIN | ADC1_IN7_PIN;
+	GPIO_InitStructure.GPIO_Pin = ADC1_IN0_PIN | ADC1_IN1_PIN | ADC1_IN4_PIN;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-	GPIO_InitStructure.GPIO_Pin = ADC1_IN8_PIN | ADC1_IN9_PIN;
+	GPIO_InitStructure.GPIO_Pin = ADC1_IN10_PIN | ADC1_IN11_PIN | ADC1_IN12_PIN | ADC1_IN13_PIN;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
 	
 	ADC_CommonInitStructure.ADC_Mode = ADC_Mode_Independent;
 	ADC_CommonInitStructure.ADC_TwoSamplingDelay = ADC_TwoSamplingDelay_20Cycles;
@@ -119,13 +119,13 @@ void  Adc_Init(void)
 	BSP_IntVectSet(BSP_INT_ID_DMA2_CH0,DMA2_Stream0_IRQHandler);
 	BSP_IntEn(BSP_INT_ID_DMA2_CH0);
 
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_56Cycles );    
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_6, 2, ADC_SampleTime_56Cycles );
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_7, 3, ADC_SampleTime_56Cycles );
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_8, 4, ADC_SampleTime_56Cycles );
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_9, 5, ADC_SampleTime_56Cycles );
-
-	
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_56Cycles );		//roll 
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_1, 2, ADC_SampleTime_56Cycles );		//throttle	
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_4, 3, ADC_SampleTime_56Cycles );		//vcc in
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_10, 4, ADC_SampleTime_56Cycles );	//ptz horizontal
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_11, 5, ADC_SampleTime_56Cycles );	//ptz vertical
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_12, 6, ADC_SampleTime_56Cycles );	//yaw
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_13, 7, ADC_SampleTime_56Cycles );	//pitch
 	
     ADC_DMARequestAfterLastTransferCmd(ADC1,ENABLE); 
     ADC_DMACmd(ADC1, ENABLE); 

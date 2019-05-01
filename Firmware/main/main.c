@@ -6,6 +6,11 @@
 #include "uart_drv.h"
 #include "key_74hc165d_drv.h"
 #include "led_74hc595d_drv.h"
+#include "protocol.h"
+#include "gpio_drv.h"
+#include "can_drv.h"
+#include "button_drv.h"
+#include "adc_drv.h"
 
 OS_MUTEX	TX_MUTEX;		//uart tx mutex
 OS_MUTEX	RX_MUTEX;		//uart rx mutex
@@ -15,8 +20,8 @@ OS_MUTEX	FIFO_MUTEX;
 extern key_state_t key_state[NUMBER_OF_KEY];
 extern const u16 led_index[16];
 //static FIFO_T stFiFo;
-
-const u16 led_test[16]={0x0001,0x0002,0x0004,0x0008,0x0010,0x0020,0x0040,0x0080,0x0100,0x0200,0x0400,0x0800,0x1000,0x2000,0x4000,0x8000};
+extern u32 test_flag;
+//const u16 led_test[16]={0x0001,0x0002,0x0004,0x0008,0x0010,0x0020,0x0040,0x0080,0x0100,0x0200,0x0400,0x0800,0x1000,0x2000,0x4000,0x8000};
 
 //static u16 led_value[3]={0};	//led display value for each two 74hc595 input
 
@@ -49,20 +54,41 @@ static  CPU_STK  app_key_task_stk[APP_KEY_TASK_STK_SIZE];
 static  OS_TCB   app_led_task_tcb;
 static  CPU_STK  app_led_task_stk[APP_LED_TASK_STK_SIZE];
 
+
+extern volatile packet_t dataToSend;
+u8 can_test[16] = {0xAA,0xAA,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0xFF,0x55,0x55};
+//u8 can_test[8]={0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08};
 /*----------------------------------------------------------------------------*/
+
+
+
+
 //local function
 STATIC void app_tx_task(void *p_arg)
 {
 	OS_ERR      err;
-
+	
 	(void)p_arg;
 	
 	while (DEF_TRUE) 
     {   
-		
+		if(dataToSend.repeat)
+		{
+			if(dataToSend.repeat != 0xFE)
+				dataToSend.repeat--;
+			if(dataToSend.power_enable && dataToSend.packet_enable)
+			{
+				adc_packet(dataToSend.event_index);
+				data_packet();
+			}
+		}
+		if(dataToSend.power_trig == 1)
+		{
+			data_packet();
+			dataToSend.power_trig = 0;
+		}
 
-
-		OSTimeDlyHMSM(0, 0, 0, 10, OS_OPT_TIME_HMSM_STRICT, &err);
+		OSTimeDlyHMSM(0, 0, 0, 50, OS_OPT_TIME_HMSM_STRICT, &err);
     }
 }
 
@@ -78,18 +104,16 @@ STATIC void app_key_scan_task(void *p_arg)
 	while (DEF_TRUE) 
     { 
     	if(read_shift_regs(&index) == 4){
-//			for(index=0;index<48;index++)
-//			{
-//		    	if(key_state[Index].key_status == KEY_RELEASED)
-//				{
-//					MSG("key%d released\n",Index);
-//				}
-//			}
-				key_state_remap_handle(index);
+			if(index == 47)
+			{
+				gpio_value_reset(GPIO_SRC_TEST);
+				OSTimeDlyHMSM(0, 0, 0, 100, OS_OPT_TIME_HMSM_STRICT, &err);
+				gpio_value_set(GPIO_SRC_TEST);
+			}
+			key_state_remap_handle(index);
     	}
-
-		//key_state_remap_handle(Index);
-		OSTimeDlyHMSM(0, 0, 0, 10, OS_OPT_TIME_HMSM_STRICT, &err);
+		pwr_key_scan();
+		OSTimeDlyHMSM(0, 0, 0, 15, OS_OPT_TIME_HMSM_STRICT, &err);
     }
 }
 
@@ -123,7 +147,7 @@ STATIC void app_led_display_task(void *p_arg)
 		{
 			write_shift_regs(led_value[chip_index],chip_index);
 		}
-		OSTimeDlyHMSM(0, 0, 0, 5, OS_OPT_TIME_HMSM_STRICT, &err);
+		OSTimeDlyHMSM(0, 0, 0, 20, OS_OPT_TIME_HMSM_STRICT, &err);
     }
 }
 
@@ -185,7 +209,8 @@ STATIC void app_task_start(void *p_arg)
 {
     OS_ERR      err;
 	//u32 i =0;
-	//u8 i,j;
+//	u8 i;
+//	u16 adcValue[7]={0};
 
 
    (void)p_arg;
@@ -219,6 +244,7 @@ STATIC void app_task_start(void *p_arg)
 				  (OS_ERR*		)&err);
 
     app_task_create();                                            
+	gpio_value_set(GPIO_SRC_TEST);
 
     while (DEF_TRUE) 
     {   
@@ -232,7 +258,15 @@ STATIC void app_task_start(void *p_arg)
 //				
 //			}
 //       	}
-		OSTimeDlyHMSM(0, 0, 1, 0, OS_OPT_TIME_HMSM_STRICT, &err);	
+//		for(i=0;i<7;i++)
+//		{
+//				adcValue[i] = adc_getvalue(i);
+//			MSG("%d,",adcValue[i]);
+//		}
+		//MSG("%d\n",test_flag);
+		//MSG("\n");
+		//MSG("-----------------------------------------------\n");
+		OSTimeDlyHMSM(0, 0, 0, 50, OS_OPT_TIME_HMSM_STRICT, &err);	
 		
     }
 }

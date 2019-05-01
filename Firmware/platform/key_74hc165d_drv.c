@@ -2,8 +2,10 @@
 #include "stm32f4xx_gpio.h"
 #include "key_74hc165d_drv.h"
 #include "gpio_drv.h"
+#include "protocol.h"
 #include "bsp.h"
 #include "bsp_os.h"
+//#include "adc_drv.h"
 
 
 key_state_t key_state[NUMBER_OF_KEY]={{0,0,0,0},{0,1,0,0},{0,2,0,0},{0,3,0,0},{0,4,0,0},{0,5,0,0},{0,6,0,0},{0,7,0,0},
@@ -16,6 +18,9 @@ key_state_t key_state[NUMBER_OF_KEY]={{0,0,0,0},{0,1,0,0},{0,2,0,0},{0,3,0,0},{0
 const u16 key_index[16] = {KEY1,KEY2,KEY3,KEY4,KEY5,KEY6,KEY7,KEY8,KEY9,KEY10,KEY11,KEY12,KEY13,KEY14,KEY15,KEY16};
 
 aircraft_state_t aircraft_state[4]={{0,0,0,0},{1,0,0,0},{2,0,0,0},{3,0,0,0}};
+
+extern packet_t dataToSend;
+
 
 STATIC  void delay(u16 count)
 {
@@ -70,7 +75,7 @@ void key_state_remap_handle(u8 index)
 				key_state[count].key_status = KEY_RELEASE;
 			}
 			//发送视频显示切换事件
-			MSG("display selected--%d\n",index);
+			//MSG("display selected--%d\n",index);
 		}
 	}
 	else if(index < KEY_SRC_CTLOPT_AIRCRAFT1 && index >=KEY_SRC_STREAMING_AIRCRAFT1){//key8 -- key15关联处理(独立可复用，自身开关)
@@ -79,10 +84,10 @@ void key_state_remap_handle(u8 index)
 			key_state[index].key_status = KEY_RELEASE;
 			key_state[index].key_set = 0;
 			//关闭推流事件
-			MSG("close push flow channel %d\n",(index-8));
+			//MSG("close push flow channel %d\n",(index-8));
 		}else{
 			//发送推流事件
-			MSG("open push flow channel %d\n",(index-8));
+			//MSG("open push flow channel %d\n",(index-8));
 		}
 		
 		key_state[index].key_set++;
@@ -109,8 +114,9 @@ void key_state_remap_handle(u8 index)
 			//MSG("aircraftFlag=%d\n",aircraftFlag);
 			
 			aircraft_selected = get_selected_aircraft();
-			MSG("aircraft_selected= %d\n",aircraft_selected);
-			
+			//MSG("aircraft_selected= %d\n",aircraft_selected);
+			dataToSend.packet_enable &= aircraftFlag;
+			dataToSend.packet_enable &= (key_state[KEY_SRC_CTLMOTION_AIRCRAFT].key_status==KEY_RELEASED || key_state[KEY_SRC_CTLMOTION_PTZ].key_status==KEY_RELEASED);
 			prev_index = index;
 		}
 		//如果选择的是飞行器1到4，则需要设置相应的状态位
@@ -151,23 +157,68 @@ void key_state_remap_handle(u8 index)
 		{
 			if(aircraftFlag == 0){
 				key_state[index].key_status = KEY_RELEASE;
+			}else{
+				if(index == KEY_SRC_CTLMOTION_AIRCRAFT)
+				{
+					if(key_state[KEY_SRC_CTLMOTION_PTZ].key_status == KEY_RELEASED)
+						key_state[KEY_SRC_CTLMOTION_PTZ].key_status = KEY_RELEASE;
+					dataToSend.index_src = aircraft_selected;
+					dataToSend.control_type= CONTROL_SRC_DRONE;
+					dataToSend.control_event = EVENT_SRC_JOYSTICK;
+					dataToSend.packet_enable = 1;
+					dataToSend.repeat = 0xFE;
+					dataToSend.event_index = 1;
+					//adc_packet(0);
+					MSG("send message,index=%d\n",index);
+					
+				}else if(index == KEY_SRC_CTLMOTION_PTZ){
+					if(key_state[KEY_SRC_CTLMOTION_AIRCRAFT].key_status == KEY_RELEASED)
+						key_state[KEY_SRC_CTLMOTION_AIRCRAFT].key_status = KEY_RELEASE;
+					dataToSend.index_src = aircraft_selected;
+					dataToSend.control_type= CONTROL_SRC_PTZ;
+					dataToSend.control_event = EVENT_SRC_JOYSTICK;
+					dataToSend.packet_enable = 1;
+					dataToSend.repeat = 0xFE;
+					dataToSend.event_index = 2;
+					//adc_packet(1);
+					MSG("send message,index=%d\n",index);
+				}
 			}
-			if(index == KEY_SRC_CTLMOTION_AIRCRAFT && key_state[KEY_SRC_CTLMOTION_PTZ].key_status == KEY_RELEASED)
-			{
-				key_state[KEY_SRC_CTLMOTION_PTZ].key_status = KEY_RELEASE;
-			}else if(index == KEY_SRC_CTLMOTION_PTZ && key_state[KEY_SRC_CTLMOTION_AIRCRAFT].key_status == KEY_RELEASED){
-				key_state[KEY_SRC_CTLMOTION_AIRCRAFT].key_status = KEY_RELEASE;
-			}			
 		}else if(index == KEY_SRC_CTLMOTION_PTZRESET || index == KEY_SRC_CTLMOTION_ZOOMIN || index == KEY_SRC_CTLMOTION_ZOOMOUT || index == KEY_SRC_CTLMOTION_ZOOMRESET){
 			if(key_state[KEY_SRC_CTLMOTION_PTZ].key_status == KEY_RELEASED)
 			{
 				//产生飞行器云台控制事件
+				dataToSend.index_src = aircraft_selected;			
+				dataToSend.control_type= CONTROL_SRC_PTZ;
+				if(index == KEY_SRC_CTLMOTION_PTZRESET){
+					dataToSend.control_event = EVENT_SRC_PTZRESET;
+				}else if(index == KEY_SRC_CTLMOTION_ZOOMIN){
+					dataToSend.control_event = EVENT_SRC_ZOOMIN;
+				}else if(index == KEY_SRC_CTLMOTION_ZOOMOUT){
+					dataToSend.control_event = EVENT_SRC_ZOOMOUT;
+				}else if(index == KEY_SRC_CTLMOTION_ZOOMRESET){
+					dataToSend.control_event = EVENT_SRC_ZOOMRESET;
+				}
+				dataToSend.packet_enable = 1;
+				dataToSend.repeat = 1;
+				dataToSend.event_index = 255;
+				//adc_packet(255);
 				MSG("send message,index=%d\n",index);
 			}
 			key_state[index].key_status = KEY_RELEASE;
 		}else if(index == KEY_SRC_CTLMOTION_CRASHSTOP || index ==KEY_SRC_CTLMOTION_RETURNHOME){
 			if(key_state[KEY_SRC_CTLMOTION_AIRCRAFT].key_status == KEY_RELEASED){
 				//产生返航或者急停事件
+				dataToSend.index_src = aircraft_selected;
+				dataToSend.control_type= CONTROL_SRC_DRONE;
+				if(index == KEY_SRC_CTLMOTION_CRASHSTOP){
+					dataToSend.control_event = EVENT_SRC_CRASHSTOP;
+				}else{
+					dataToSend.control_event = EVENT_SRC_RTNHOME;
+				}
+				dataToSend.packet_enable = 1;
+				dataToSend.repeat = 1;
+				adc_packet(255);
 				MSG("send message,index=%d\n",index);				
 			}
 			key_state[index].key_status = KEY_RELEASE;
@@ -221,6 +272,7 @@ void key_state_remap_handle(u8 index)
 	else if(index >= KEY_SRC_BACKUP1){
 		key_state[index].key_status = KEY_RELEASE;
 	}
+	//dataToSend.packet_enable = aircraftFlag;
 }
 
 

@@ -25,6 +25,8 @@
 #include "gpio_drv.h"
 #include "key_74hc165d_drv.h"
 #include "led_74hc595d_drv.h"
+#include "can_drv.h"
+
 
 /*----------------------------------------------------------------------------*/
 //macros
@@ -120,22 +122,22 @@ void  BSP_Init (void)
 	BSP_PeriphEn(BSP_PERIPH_ID_TIM4);
 	BSP_PeriphEn(BSP_PERIPH_ID_TIM5);
 	
-	
+	BSP_PeriphEn(BSP_PERIPH_ID_CAN1);
 }
 
 void BSP_Peripheral_Init(void)
 {
 //    led_drv_init();
     uart_drv_init();
-//	button_drv_init();
+	button_drv_init();
 //	buzzer_drv_init();
-//	Adc_Init();
+	Adc_Init();
 	gpio_drv_init(); //config gpio for output
 //	TIM3_PWM_Init(4095,7);  //TIM3 for adc2,3,4,5
 //	TIM5_PWM_Init(4095,7); //pwm frequency=1M/409 = 2.439KHz
 	read_shift_init();
 	write_shift_init();
-
+	CAN1_Init(); //can bus init
 }
 
 /*

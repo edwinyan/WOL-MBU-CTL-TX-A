@@ -84,6 +84,8 @@ typedef enum{
 	GPIO_SRC_OUT595_2,
 	GPIO_SRC_OUT595_3,
 	GPIO_SRC_OUT595_4,
+
+	GPIO_SRC_TEST,
 	
 	GPIO_SRC_NUM_OUT
 
@@ -100,8 +102,8 @@ typedef enum{
 }gpio_src_in_enum;
 
 void gpio_drv_init(void);
-//void gpio_value_set(u8 src);
-//void gpio_value_reset(u8 src);
+void gpio_value_set(u8 src);
+void gpio_value_reset(u8 src);
 
 
 
