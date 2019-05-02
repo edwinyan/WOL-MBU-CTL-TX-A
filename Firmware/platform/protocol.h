@@ -8,6 +8,10 @@
 #define TAIL1		0x55
 #define TAIL2		0x55
 
+#define ROCKER_MIDDLE	0
+#define ROCKER_UP		1
+#define ROCKER_DOWN		2
+
 //·ÉÐÐÆ÷±àºÅ
 typedef enum{
 	IDNEX_SRC_DRONE1=1,

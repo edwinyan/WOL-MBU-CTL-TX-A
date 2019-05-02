@@ -28,22 +28,88 @@ u8 checksum(u8 *data,u8 size)
 void adc_packet(u8 index)
 {
 	u8 i;
+	u16 adcTemp[4]={0};
+
 	
 	if(index == 1)
 	{
-		dataToSend.adc_value[0] = adc_getvalue(ADC_CHANNEL_JS_THROTTLE) >> 8;
-		dataToSend.adc_value[1] = adc_getvalue(ADC_CHANNEL_JS_THROTTLE);
-		dataToSend.adc_value[2] = adc_getvalue(ADC_CHANNEL_JS_ROLL) >> 8;
-		dataToSend.adc_value[3] = adc_getvalue(ADC_CHANNEL_JS_ROLL);
-		dataToSend.adc_value[4] = adc_getvalue(ADC_CHANNEL_JS_PITCH) >> 8;
-		dataToSend.adc_value[5] = adc_getvalue(ADC_CHANNEL_JS_PITCH);
-		dataToSend.adc_value[6] = adc_getvalue(ADC_CHANNEL_JS_YAW) >> 8;
-		dataToSend.adc_value[7] = adc_getvalue(ADC_CHANNEL_JS_YAW);
+		adcTemp[0] = adc_getvalue(ADC_CHANNEL_JS_THROTTLE);
+		
+		if(adcTemp[0] < 1750){
+			dataToSend.adc_value[0] = ROCKER_DOWN;
+			dataToSend.adc_value[1] = (1750 - adcTemp[0])/300 +1;
+		}else if(adcTemp[0] > 2050){
+			dataToSend.adc_value[0] = ROCKER_UP;
+			dataToSend.adc_value[1] = (adcTemp[0] - 2050)/300 +1;
+		}else if(adcTemp[0] >= 1750 && adcTemp[0] <= 2050){
+			dataToSend.adc_value[0] = ROCKER_MIDDLE;
+			dataToSend.adc_value[1] = 0;
+		}
+		
+		adcTemp[1] = adc_getvalue(ADC_CHANNEL_JS_ROLL);
+		
+		if(adcTemp[1] < 1850){
+			dataToSend.adc_value[2] = ROCKER_DOWN;
+			dataToSend.adc_value[3] = (1850 - adcTemp[1])/300 +1;
+		}else if(adcTemp[1] > 2150){
+			dataToSend.adc_value[2] = ROCKER_UP;
+			dataToSend.adc_value[3] = (adcTemp[1] - 2150)/300 +1;
+		}else if(adcTemp[1] >= 1850 && adcTemp[1] <= 2150){
+			dataToSend.adc_value[2] = ROCKER_MIDDLE;
+			dataToSend.adc_value[3] = 0;
+		}
+
+		adcTemp[2] = adc_getvalue(ADC_CHANNEL_JS_PITCH);
+		
+		if(adcTemp[2] < 1800){
+			dataToSend.adc_value[4] = ROCKER_DOWN;
+			dataToSend.adc_value[5] = (1800 - adcTemp[2])/300 +1;
+		}else if(adcTemp[2] > 2100){
+			dataToSend.adc_value[4] = ROCKER_UP;
+			dataToSend.adc_value[5] = (adcTemp[2] - 2100)/300 +1;
+		}else if(adcTemp[2] >= 1800 && adcTemp[2] <= 2100){
+			dataToSend.adc_value[4] = ROCKER_MIDDLE;
+			dataToSend.adc_value[5] = 0;
+		}
+
+		adcTemp[3] = adc_getvalue(ADC_CHANNEL_JS_YAW);
+		
+		if(adcTemp[3] < 1750){
+			dataToSend.adc_value[6] = ROCKER_DOWN;
+			dataToSend.adc_value[7] = (1750 - adcTemp[3])/300 +1;
+		}else if(adcTemp[3] > 2050){
+			dataToSend.adc_value[6] = ROCKER_UP;
+			dataToSend.adc_value[7] = (adcTemp[3] - 2050)/300 +1;
+		}else if(adcTemp[3] >= 1750 && adcTemp[3] <= 2050){
+			dataToSend.adc_value[6] = ROCKER_MIDDLE;
+			dataToSend.adc_value[7] = 0;
+		}
+		
 	}else if(index==2){
-		dataToSend.adc_value[0] = adc_getvalue(ADC_CHANNEL_PTZ_V) >> 8;
-		dataToSend.adc_value[1] = adc_getvalue(ADC_CHANNEL_PTZ_V);
-		dataToSend.adc_value[2] = adc_getvalue(ADC_CHANNEL_PTZ_H) >> 8;
-		dataToSend.adc_value[3] = adc_getvalue(ADC_CHANNEL_PTZ_H);
+		adcTemp[0] = adc_getvalue(ADC_CHANNEL_PTZ_V);
+		
+		if(adcTemp[0] < 1700){
+			dataToSend.adc_value[0] = ROCKER_DOWN;
+			dataToSend.adc_value[1] = (1700 - adcTemp[0])/256;
+		}else if(adcTemp[0] > 2050){
+			dataToSend.adc_value[0] = ROCKER_UP;
+			dataToSend.adc_value[1] = (adcTemp[0] - 2050)/256;
+		}else if(adcTemp[0] >= 1700 && adcTemp[0] <= 2050){
+			dataToSend.adc_value[0] = ROCKER_MIDDLE;
+			dataToSend.adc_value[1] = 0;
+		}
+		adcTemp[1] = adc_getvalue(ADC_CHANNEL_PTZ_H);
+		
+		if(adcTemp[1] < 1875){
+			dataToSend.adc_value[2] = ROCKER_DOWN;
+			dataToSend.adc_value[3] = (1875 - adcTemp[1])/256;
+		}else if(adcTemp[1] > 2125){
+			dataToSend.adc_value[2] = ROCKER_UP;
+			dataToSend.adc_value[3] = (adcTemp[1] - 2125)/256;
+		}else if(adcTemp[1] >= 1875 && adcTemp[1] <= 2125){
+			dataToSend.adc_value[2] = ROCKER_MIDDLE;
+			dataToSend.adc_value[3] = 0;
+		}
 		dataToSend.adc_value[4] = 0x00;
 		dataToSend.adc_value[5] = 0x00;
 		dataToSend.adc_value[6] = 0x00;

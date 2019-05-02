@@ -209,8 +209,8 @@ STATIC void app_task_start(void *p_arg)
 {
     OS_ERR      err;
 	//u32 i =0;
-//	u8 i;
-//	u16 adcValue[7]={0};
+	u8 i;
+	u16 adcValue[7]={0};
 
 
    (void)p_arg;
