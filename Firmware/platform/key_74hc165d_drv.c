@@ -84,13 +84,14 @@ void key_state_remap_handle(u8 index)
 			key_state[index].key_status = KEY_RELEASE;
 			key_state[index].key_set = 0;
 			//关闭推流事件
-			//MSG("close push flow channel %d\n",(index-8));
+			MSG("close push flow channel %d\n",(index-8));
 		}else{
 			//发送推流事件
-			//MSG("open push flow channel %d\n",(index-8));
+			MSG("open push flow channel %d\n",(index-8));
+			key_state[index].key_set = 1;
 		}
 		
-		key_state[index].key_set++;
+		//key_state[index].key_set++;
 		
 	}else if(index < KEY_SRC_CTLMOTION_AIRCRAFT && index >= KEY_SRC_CTLOPT_AIRCRAFT1){//key16 -- key23关联处理(互斥)
 		for(count=KEY_SRC_CTLOPT_AIRCRAFT1;count<KEY_SRC_CTLMOTION_AIRCRAFT;count++)
