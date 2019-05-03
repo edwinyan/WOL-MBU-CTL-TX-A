@@ -32,7 +32,7 @@ void tc_run_all(void)
    // sd_tc_run();
    //	button_tc_run();
    //w25qxx_tc_run();
-   //flash_tc_run();
+   flash_tc_run();
    
 	
     tc_printf_tail("All testing cases");
@@ -41,7 +41,8 @@ void tc_run_all(void)
     {
     	//button_tc_run();
 		//adc_tc_run();
-		pwm_tc_run();
+		//pwm_tc_run();
+		flash_tc_run();
         OSTimeDlyHMSM(0, 0, 0, 100, OS_OPT_TIME_HMSM_STRICT, &err);
     }
 }

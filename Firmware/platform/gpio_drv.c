@@ -31,7 +31,7 @@ STATIC gpio_config_t gpio_config_out_array[GPIO_SRC_NUM_OUT] = {
 	{IN_595_3_GPIO, IN_595_3}, 	
 	{IN_595_4_GPIO, IN_595_4},
 
-    {GPIOD,GPIO_Pin_2},
+    {GPIOA,GPIO_Pin_2},
 
 };
 

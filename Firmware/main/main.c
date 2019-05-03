@@ -11,6 +11,7 @@
 #include "can_drv.h"
 #include "button_drv.h"
 #include "adc_drv.h"
+#include "flash_drv.h"
 
 OS_MUTEX	TX_MUTEX;		//uart tx mutex
 OS_MUTEX	RX_MUTEX;		//uart rx mutex
@@ -24,6 +25,8 @@ extern u32 test_flag;
 //const u16 led_test[16]={0x0001,0x0002,0x0004,0x0008,0x0010,0x0020,0x0040,0x0080,0x0100,0x0200,0x0400,0x0800,0x1000,0x2000,0x4000,0x8000};
 
 //static u16 led_value[3]={0};	//led display value for each two 74hc595 input
+
+//u8 needSaved[10] = {1,2,3,4,5,6,7,8,9,10};
 
 /*----------------------------------------------------------------------------*/
 //macro and variables
@@ -56,12 +59,13 @@ static  CPU_STK  app_led_task_stk[APP_LED_TASK_STK_SIZE];
 
 
 extern volatile packet_t dataToSend;
-u8 can_test[16] = {0xAA,0xAA,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0xFF,0x55,0x55};
+//u8 can_test[16] = {0xAA,0xAA,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0xFF,0x55,0x55};
 //u8 can_test[8]={0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08};
 /*----------------------------------------------------------------------------*/
-
-
-
+//u8 read_enable=0;
+extern u8 press_count;
+extern u8 exchange_enable;
+extern u8 prev_display;
 
 //local function
 STATIC void app_tx_task(void *p_arg)
@@ -97,6 +101,10 @@ STATIC void app_key_scan_task(void *p_arg)
 	OS_ERR      err;
 	u8 index=0;
 //	u8 Index=0;
+//u8 display[10]={0};
+
+//u8 i;
+	
 
 	(void)p_arg;
 	
@@ -106,9 +114,21 @@ STATIC void app_key_scan_task(void *p_arg)
     	if(read_shift_regs(&index) == 4){
 			if(index == 47)
 			{
-				gpio_value_reset(GPIO_SRC_TEST);
+				gpio_value_reset(GPIO_SRC_TX2);
 				OSTimeDlyHMSM(0, 0, 0, 100, OS_OPT_TIME_HMSM_STRICT, &err);
-				gpio_value_set(GPIO_SRC_TEST);
+				gpio_value_set(GPIO_SRC_TX2);
+//				needSaved[0]++;
+//				FLASH_Write(FLASH_SAVE_ADDR,(u32*)needSaved,10);
+				
+				//FLASH_Read(FLASH_SAVE_ADDR,(u32 *)display,1);
+				//read_enable =1;
+//				for(i=0;i<10;i++){
+//					if(display[i] != 0)
+//					{
+						//MSG("display0 = %d\n",display[0]);
+//					}
+//				}
+				//MSG("set value to flash\n");
 			}
 			key_state_remap_handle(index);
     	}
@@ -209,9 +229,10 @@ STATIC void app_task_start(void *p_arg)
 {
     OS_ERR      err;
 	//u32 i =0;
-	u8 i;
-	u16 adcValue[7]={0};
-
+//	u8 i;
+	//u16 adcValue[7]={0};
+	u8 display[2]={0};
+	u8 index;
 
    (void)p_arg;
 
@@ -244,20 +265,25 @@ STATIC void app_task_start(void *p_arg)
 				  (OS_ERR*		)&err);
 
     app_task_create();                                            
-	gpio_value_set(GPIO_SRC_TEST);
+	gpio_value_set(GPIO_SRC_TX2);
+	//for exchange init
+	//handle_display_exchange(8);
+
+	FLASH_Read(FLASH_SAVE_ADDR,(u32 *)display,2);
+	index = display[0];
+	if(index <8){
+		key_state[index].key_status = KEY_RELEASED;
+		prev_display = index;
+	}
+//	for(i=0;i<30;i++)
+//	{
+//		MSG("%d,",display[0]);
+//	}
+//	MSG("\n");
 
     while (DEF_TRUE) 
     {   
-        //tc_run_all();
-       // MSG("------=------loop-------=------\r\n");
-//       	for(i=0;i<3;i++)
-//		{
-//			for(j=0;j<16;j++)
-//			{
-//				write_shift_regs(led_test[j],i);
-//				
-//			}
-//       	}
+  //      tc_run_all();
 //		for(i=0;i<7;i++)
 //		{
 //				adcValue[i] = adc_getvalue(i);
@@ -265,8 +291,16 @@ STATIC void app_task_start(void *p_arg)
 //		}
 		//MSG("%d\n",test_flag);
 		//MSG("\n");
+		if(exchange_enable ==1)
+		{
+			handle_display_exchange(press_count);
+			exchange_enable=0;
+			
+//			FLASH_Write(FLASH_SAVE_ADDR,(u32*)needSaved,10);
+//			MSG("press_count=%d\n",press_count);
+		}
 		//MSG("-----------------------------------------------\n");
-		OSTimeDlyHMSM(0, 0, 0, 50, OS_OPT_TIME_HMSM_STRICT, &err);	
+		OSTimeDlyHMSM(0, 0, 1, 0, OS_OPT_TIME_HMSM_STRICT, &err);	
 		
     }
 }

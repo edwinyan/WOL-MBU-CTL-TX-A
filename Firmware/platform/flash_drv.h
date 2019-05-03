@@ -3,7 +3,7 @@
 
 #define STM32_FLASH_BASE 0x08000000 	//STM32 FLASH起始地址
 
-#define FLASH_TEST_ADDR  0X080E0000     //最后一个扇区
+#define FLASH_SAVE_ADDR  0X080E0000     //最后一个扇区
 
 //FLASH 扇区起始地址
 #define ADDR_FLASH_SECTOR_0     ((u32)0x08000000) 	//扇区0起始地址, 16 Kbytes  

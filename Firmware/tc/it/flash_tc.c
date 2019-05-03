@@ -16,9 +16,9 @@ STATIC void flash_tc_01(void)
 
     tc_printf_banner("flash test ");
     
-    FLASH_Write(FLASH_TEST_ADDR,(u32*)Test_Buffer,SIZE);
+    FLASH_Write(FLASH_SAVE_ADDR,(u32*)Test_Buffer,SIZE);
 
-	FLASH_Read(FLASH_TEST_ADDR,(u32*)datatemp,SIZE);
+	FLASH_Read(FLASH_SAVE_ADDR,(u32*)datatemp,SIZE);
 
 	for(i=0;i<SIZE;i++){
 		MSG("%c",datatemp[i]);

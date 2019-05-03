@@ -114,5 +114,6 @@ typedef struct{
 void read_shift_init(void);
 u8 read_shift_regs(u8 *index);
 void key_state_remap_handle(u8 index);
+void handle_display_exchange(u8 count);
 
 #endif

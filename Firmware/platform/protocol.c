@@ -59,8 +59,8 @@ void adc_packet(u8 index)
 			dataToSend.adc_value[3] = 0;
 		}
 
-		adcTemp[2] = adc_getvalue(ADC_CHANNEL_JS_PITCH);
-		
+		//adcTemp[2] = adc_getvalue(ADC_CHANNEL_JS_PITCH);
+		adcTemp[2] = adc_getvalue(ADC_CHANNEL_JS_YAW);
 		if(adcTemp[2] < 1800){
 			dataToSend.adc_value[4] = ROCKER_DOWN;
 			dataToSend.adc_value[5] = (1800 - adcTemp[2])/300 +1;
@@ -72,8 +72,8 @@ void adc_packet(u8 index)
 			dataToSend.adc_value[5] = 0;
 		}
 
-		adcTemp[3] = adc_getvalue(ADC_CHANNEL_JS_YAW);
-		
+		//adcTemp[3] = adc_getvalue(ADC_CHANNEL_JS_YAW);
+		adcTemp[3] = adc_getvalue(ADC_CHANNEL_JS_PITCH);
 		if(adcTemp[3] < 1750){
 			dataToSend.adc_value[6] = ROCKER_DOWN;
 			dataToSend.adc_value[7] = (1750 - adcTemp[3])/300 +1;
