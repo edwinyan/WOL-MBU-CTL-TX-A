@@ -38,8 +38,8 @@
 #define	SHCP_CLK_3	GPIO_Pin_12		//PA12
 
 #define IN_595_4	GPIO_Pin_4		//PB4
-#define STCP_CLK_4	GPIO_Pin_5		//PB5
-#define	SHCP_CLK_4	GPIO_Pin_6		//PB6
+#define STCP_CLK_4	GPIO_Pin_6		//PB5
+#define	SHCP_CLK_4	GPIO_Pin_5		//PB6
 
 //74HC595D GPIO defines
 #define IN_595_1_GPIO		GPIOA	//PA5
@@ -85,7 +85,7 @@ typedef enum{
 	GPIO_SRC_OUT595_3,
 	GPIO_SRC_OUT595_4,
 
-	GPIO_SRC_TX2,
+	GPIO_SRC_TX2,		//gpio for control exchange video display
 	
 	GPIO_SRC_NUM_OUT
 

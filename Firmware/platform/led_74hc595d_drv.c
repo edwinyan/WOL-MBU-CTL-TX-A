@@ -162,9 +162,9 @@ void write_shift_regs(u16 value,u8 index)
 				
 			}
 			/*store bits*/
-			GPIO_SetBits(SHCP_CLK_1_GPIO,STCP_CLK_1);
+			GPIO_SetBits(STCP_CLK_1_GPIO,STCP_CLK_1);
 			delay_us(5);
-			GPIO_ResetBits(SHCP_CLK_1_GPIO,STCP_CLK_1);
+			GPIO_ResetBits(STCP_CLK_1_GPIO,STCP_CLK_1);
 			delay_us(5);
 			break;
 		case 1:

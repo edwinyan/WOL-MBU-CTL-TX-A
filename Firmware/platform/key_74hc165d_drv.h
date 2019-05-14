@@ -88,12 +88,7 @@ typedef enum{
 	KEY_SRC_NUM
 }key_src_enum;
 
-typedef struct{
-	u8 chip_index;	//0 -- 2 chip index
-	u8 key_index;	//0 -- 15 key index 	
-	u8 key_status;	//0:released 1:hold 2:pressed
-	u16 key_set;		//count of key has been pressed
-}key_state_t;
+
 
 typedef struct{
 	u8 aircraft_selected;
@@ -109,6 +104,43 @@ typedef struct{
 	u8 zoom_out;
 	u8 zoom_reset;
 }controlball_state_t;
+
+typedef struct{
+	u8 press_count;		//count need to be pressed
+	bool exchange_event;	//flag for exchange
+	u8 prev_display;	//default value
+
+}display_state_t;
+
+typedef struct{
+	u8 stream_index;	//number of stream need to be pushed
+	u8 stream_value;	//value of stream need to be set(0:close,1:open)
+	bool stream_event;	//flag for stream
+}stream_state_t;
+
+typedef struct{
+//	u8 chip_index;	//0 -- 2 chip index
+//	u8 key_index;	//0 -- 15 key index 	
+	u8 key_status;	//0:released 1:hold 2:pressed
+	u8 key_set;	//flag of key has been pressed	
+}key_state_t;
+
+
+typedef struct{
+	key_state_t key_state[NUMBER_OF_KEY];
+	stream_state_t stream_state;
+
+	aircraft_state_t aircraft_state[4];
+	controlball_state_t controlball_state[2];
+	display_state_t display_state;
+
+}app_t;
+
+
+
+
+
+
 
 
 void read_shift_init(void);

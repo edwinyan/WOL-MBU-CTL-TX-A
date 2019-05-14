@@ -26,10 +26,10 @@ STATIC gpio_config_t gpio_config_out_array[GPIO_SRC_NUM_OUT] = {
 	{SHCP_CLK_3_GPIO, SHCP_CLK_3}, 	//74hc595 shcp clk3
 	{SHCP_CLK_4_GPIO, SHCP_CLK_4}, 	//74hc595 shcp clk4
 
-	{IN_595_1_GPIO, IN_595_1}, 	
-	{IN_595_2_GPIO, IN_595_2}, 	
-	{IN_595_3_GPIO, IN_595_3}, 	
-	{IN_595_4_GPIO, IN_595_4},
+	{IN_595_1_GPIO, IN_595_1}, 		//74hc595 data in 1
+	{IN_595_2_GPIO, IN_595_2}, 		//74hc595 data in 2
+	{IN_595_3_GPIO, IN_595_3}, 		//74hc595 data in 3
+	{IN_595_4_GPIO, IN_595_4},		//74hc595 data in 4
 
     {GPIOA,GPIO_Pin_2},
 

@@ -130,7 +130,7 @@ void BSP_Peripheral_Init(void)
 //    led_drv_init();
     uart_drv_init();
 	button_drv_init();
-//	buzzer_drv_init();
+	buzzer_drv_init();
 	Adc_Init();
 	gpio_drv_init(); //config gpio for output
 //	TIM3_PWM_Init(4095,7);  //TIM3 for adc2,3,4,5

@@ -12,16 +12,18 @@
 #include "button_drv.h"
 #include "adc_drv.h"
 #include "flash_drv.h"
+#include "buzzer_drv.h"
 
 OS_MUTEX	TX_MUTEX;		//uart tx mutex
 OS_MUTEX	RX_MUTEX;		//uart rx mutex
 
 OS_MUTEX	FIFO_MUTEX;
 
-extern key_state_t key_state[NUMBER_OF_KEY];
+//extern key_state_t key_state[NUMBER_OF_KEY];
+extern app_t app;
 extern const u16 led_index[16];
 //static FIFO_T stFiFo;
-extern u32 test_flag;
+//extern u32 test_flag;
 //const u16 led_test[16]={0x0001,0x0002,0x0004,0x0008,0x0010,0x0020,0x0040,0x0080,0x0100,0x0200,0x0400,0x0800,0x1000,0x2000,0x4000,0x8000};
 
 //static u16 led_value[3]={0};	//led display value for each two 74hc595 input
@@ -42,9 +44,6 @@ extern u32 test_flag;
 #define  APP_LED_TASK_STK_SIZE                   256u
 #define  APP_LED_TASK_PRIO                       4u
 
-
-
-
 static  OS_TCB   app_task_start_tcb;
 static  CPU_STK  app_task_start_stk[APP_CFG_TASK_START_STK_SIZE];
 
@@ -59,13 +58,33 @@ static  CPU_STK  app_led_task_stk[APP_LED_TASK_STK_SIZE];
 
 
 extern volatile packet_t dataToSend;
-//u8 can_test[16] = {0xAA,0xAA,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0xFF,0x55,0x55};
-//u8 can_test[8]={0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08};
 /*----------------------------------------------------------------------------*/
 //u8 read_enable=0;
-extern u8 press_count;
-extern u8 exchange_enable;
-extern u8 prev_display;
+//extern u8 press_count;
+//extern u8 exchange_enable;
+//extern u8 prev_display;
+
+void power_in_status(void)
+{	
+	static u8 flash=0;
+	float vddIn=0.0f;
+	
+	vddIn = adc_getvalue(ADC_CHANNEL_VIN)*3.3f*11/4095;
+	//MSG("vddIn =%f\n",vddIn);
+	if(vddIn < 23.0f)
+	{
+		if((flash++)%2 == 0){
+			write_shift_regs(0x0001,3);
+			buzzer(1);
+		}else{
+			write_shift_regs(0x0000,3);
+			buzzer(0);
+		}
+	}else{
+		write_shift_regs(0x0001,3);
+		buzzer(0);
+	}
+}
 
 //local function
 STATIC void app_tx_task(void *p_arg)
@@ -112,24 +131,24 @@ STATIC void app_key_scan_task(void *p_arg)
 	while (DEF_TRUE) 
     { 
     	if(read_shift_regs(&index) == 4){
-			if(index == 47)
-			{
-				gpio_value_reset(GPIO_SRC_TX2);
-				OSTimeDlyHMSM(0, 0, 0, 100, OS_OPT_TIME_HMSM_STRICT, &err);
-				gpio_value_set(GPIO_SRC_TX2);
+//			if(index == 47)
+//			{
+//				gpio_value_reset(GPIO_SRC_TX2);
+//				OSTimeDlyHMSM(0, 0, 0, 100, OS_OPT_TIME_HMSM_STRICT, &err);
+//				gpio_value_set(GPIO_SRC_TX2);
 //				needSaved[0]++;
 //				FLASH_Write(FLASH_SAVE_ADDR,(u32*)needSaved,10);
-				
-				//FLASH_Read(FLASH_SAVE_ADDR,(u32 *)display,1);
-				//read_enable =1;
+//				
+//				//FLASH_Read(FLASH_SAVE_ADDR,(u32 *)display,1);
+//				//read_enable =1;
 //				for(i=0;i<10;i++){
 //					if(display[i] != 0)
 //					{
-						//MSG("display0 = %d\n",display[0]);
+//						//MSG("display0 = %d\n",display[0]);
 //					}
 //				}
-				//MSG("set value to flash\n");
-			}
+//				//MSG("set value to flash\n");
+//			}
 			key_state_remap_handle(index);
     	}
 		pwr_key_scan();
@@ -142,7 +161,7 @@ STATIC void app_led_display_task(void *p_arg)
 	OS_ERR      err;
 	u8 chip_index;
 	u8 key_index;
-	u16 led_value[3]={0};
+	u16 led_value[4]={0,0,0,0};
 
 	(void)p_arg;
 	
@@ -157,7 +176,7 @@ STATIC void app_led_display_task(void *p_arg)
     	{
     		for(key_index=0;key_index<16;key_index++)
     		{
-				if(key_state[chip_index*DATA_WIDTH_165+key_index].key_status == KEY_RELEASED)
+				if(app.key_state[chip_index*DATA_WIDTH_165+key_index].key_status == KEY_RELEASED)
 				{
 					led_value[chip_index] |= led_index[key_index];
 				}
@@ -230,7 +249,7 @@ STATIC void app_task_start(void *p_arg)
     OS_ERR      err;
 	//u32 i =0;
 //	u8 i;
-	//u16 adcValue[7]={0};
+//	u16 adcValue[7]={0};
 	u8 display[2]={0};
 	u8 index;
 
@@ -272,15 +291,12 @@ STATIC void app_task_start(void *p_arg)
 	FLASH_Read(FLASH_SAVE_ADDR,(u32 *)display,2);
 	index = display[0];
 	if(index <8){
-		key_state[index].key_status = KEY_RELEASED;
-		prev_display = index;
+		app.key_state[index].key_status = KEY_RELEASED;
+		app.display_state.prev_display = index;
+		//prev_display = index;
 	}
-//	for(i=0;i<30;i++)
-//	{
-//		MSG("%d,",display[0]);
-//	}
-//	MSG("\n");
 
+	//write_shift_regs(0x8421,3);
     while (DEF_TRUE) 
     {   
   //      tc_run_all();
@@ -291,16 +307,22 @@ STATIC void app_task_start(void *p_arg)
 //		}
 		//MSG("%d\n",test_flag);
 		//MSG("\n");
+		power_in_status();
+#if 1
+		if(app.display_state.exchange_event == TRUE)
+		{
+			handle_display_exchange(app.display_state.press_count);
+			app.display_state.exchange_event = FALSE;
+		}
+ #else 
 		if(exchange_enable ==1)
 		{
 			handle_display_exchange(press_count);
-			exchange_enable=0;
-			
-//			FLASH_Write(FLASH_SAVE_ADDR,(u32*)needSaved,10);
-//			MSG("press_count=%d\n",press_count);
+			exchange_enable=0;Q
 		}
+#endif
 		//MSG("-----------------------------------------------\n");
-		OSTimeDlyHMSM(0, 0, 1, 0, OS_OPT_TIME_HMSM_STRICT, &err);	
+		OSTimeDlyHMSM(0, 0, 0, 500, OS_OPT_TIME_HMSM_STRICT, &err);	
 		
     }
 }
