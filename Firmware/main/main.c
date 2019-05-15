@@ -19,17 +19,8 @@ OS_MUTEX	RX_MUTEX;		//uart rx mutex
 
 OS_MUTEX	FIFO_MUTEX;
 
-//extern key_state_t key_state[NUMBER_OF_KEY];
 extern app_t app;
 extern const u16 led_index[16];
-//static FIFO_T stFiFo;
-//extern u32 test_flag;
-//const u16 led_test[16]={0x0001,0x0002,0x0004,0x0008,0x0010,0x0020,0x0040,0x0080,0x0100,0x0200,0x0400,0x0800,0x1000,0x2000,0x4000,0x8000};
-
-//static u16 led_value[3]={0};	//led display value for each two 74hc595 input
-
-//u8 needSaved[10] = {1,2,3,4,5,6,7,8,9,10};
-
 /*----------------------------------------------------------------------------*/
 //macro and variables
 #define  APP_CFG_TASK_START_STK_SIZE             256u
@@ -59,10 +50,6 @@ static  CPU_STK  app_led_task_stk[APP_LED_TASK_STK_SIZE];
 
 extern volatile packet_t dataToSend;
 /*----------------------------------------------------------------------------*/
-//u8 read_enable=0;
-//extern u8 press_count;
-//extern u8 exchange_enable;
-//extern u8 prev_display;
 
 void power_in_status(void)
 {	
@@ -95,6 +82,7 @@ STATIC void app_tx_task(void *p_arg)
 	
 	while (DEF_TRUE) 
     {   
+    	//send function key pressed event
 		if(dataToSend.repeat)
 		{
 			if(dataToSend.repeat != 0xFE)
@@ -105,6 +93,7 @@ STATIC void app_tx_task(void *p_arg)
 				data_packet();
 			}
 		}
+		//send power key pressed event
 		if(dataToSend.power_trig == 1)
 		{
 			data_packet();
@@ -131,24 +120,7 @@ STATIC void app_key_scan_task(void *p_arg)
 	while (DEF_TRUE) 
     { 
     	if(read_shift_regs(&index) == 4){
-//			if(index == 47)
-//			{
-//				gpio_value_reset(GPIO_SRC_TX2);
-//				OSTimeDlyHMSM(0, 0, 0, 100, OS_OPT_TIME_HMSM_STRICT, &err);
-//				gpio_value_set(GPIO_SRC_TX2);
-//				needSaved[0]++;
-//				FLASH_Write(FLASH_SAVE_ADDR,(u32*)needSaved,10);
-//				
-//				//FLASH_Read(FLASH_SAVE_ADDR,(u32 *)display,1);
-//				//read_enable =1;
-//				for(i=0;i<10;i++){
-//					if(display[i] != 0)
-//					{
-//						//MSG("display0 = %d\n",display[0]);
-//					}
-//				}
-//				//MSG("set value to flash\n");
-//			}
+			
 			key_state_remap_handle(index);
     	}
 		pwr_key_scan();
@@ -305,7 +277,6 @@ STATIC void app_task_start(void *p_arg)
 //				adcValue[i] = adc_getvalue(i);
 //			MSG("%d,",adcValue[i]);
 //		}
-		//MSG("%d\n",test_flag);
 		//MSG("\n");
 		power_in_status();
 #if 1
